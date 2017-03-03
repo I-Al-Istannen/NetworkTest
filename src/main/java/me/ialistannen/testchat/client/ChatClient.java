@@ -50,10 +50,15 @@ public class ChatClient {
         contentPane.setLayout(new BorderLayout());
 
         textArea = new JTextArea();
+        textArea.setEditable(false);
+        textArea.setFocusable(false);
         textArea.setMargin(new Insets(5, 5, 5, 5));
 
         JTextField textField = new JTextField();
         textField.addActionListener(e -> {
+            if(textField.getText().equalsIgnoreCase(".quit")) {
+                System.exit(0);
+            }
             client.sendPacket(new PacketChatMessage(textField.getText()));
             textField.setText("");
         });
