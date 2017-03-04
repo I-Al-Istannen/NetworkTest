@@ -16,8 +16,6 @@ import me.ialistannen.networktest.shared.threading.ConnectionThreadBase;
  */
 class ClientConnectionThread extends ConnectionThreadBase {
 
-    private static final int SOCKET_TIMEOUT_MILLIS = 50;
-
     private final Client client;
 
     /**
@@ -27,7 +25,7 @@ class ClientConnectionThread extends ConnectionThreadBase {
      * @param client The {@link Client}
      */
     ClientConnectionThread(Socket socket, Client client) {
-        super("Client Connection thread", socket, SOCKET_TIMEOUT_MILLIS);
+        super("Client Connection thread", socket, 50);
 
         // won't catch everything (opened, then closed again) but it is good enough for now
         Preconditions.checkArgument(socket.isConnected(), "socket needs to be connected");

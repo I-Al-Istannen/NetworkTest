@@ -15,13 +15,13 @@ import com.google.common.collect.HashBiMap;
 import me.ialistannen.networktest.shared.event.EventFactory;
 import me.ialistannen.networktest.shared.event.EventManager;
 import me.ialistannen.networktest.shared.event.EventManager.State;
-import me.ialistannen.networktest.shared.event.IPacketEvent;
 import me.ialistannen.networktest.shared.event.PacketEvent;
 import me.ialistannen.networktest.shared.identification.ID;
 import me.ialistannen.networktest.shared.packet.Direction;
 import me.ialistannen.networktest.shared.packet.Packet;
 import me.ialistannen.networktest.shared.packet.PacketBuffer;
 import me.ialistannen.networktest.shared.packet.protocol.PacketMapper;
+import me.ialistannen.networktest.util.ReflectionUtil;
 import me.ialistannen.networktest.util.RunnableUtil;
 
 /**
@@ -201,16 +201,16 @@ public class Server <T extends ConnectedClient> {
             Class<? extends Packet> packetClass = classOptional.get();
 
             RunnableUtil.doUnchecked(() -> {
-                Packet packet = packetClass.newInstance();
+                Packet packet = ReflectionUtil.newInstance(packetClass);
                 packet.load(packetBuffer);
 
                 T client = serverToClientMap.get(serverThread);
 
                 {
-                    IPacketEvent packetEvent = eventFactory.create(packet, client, Direction.TO_SERVER, State.FILTER);
+                    PacketEvent packetEvent = eventFactory.create(packet, client, Direction.TO_SERVER, State.FILTER);
                     getEventManager().postEvent(packetEvent, State.FILTER);
 
-                    if (packetEvent instanceof PacketEvent && ((PacketEvent) packetEvent).isCancelled()) {
+                    if (packetEvent.isCancelled()) {
                         return;
                     }
 

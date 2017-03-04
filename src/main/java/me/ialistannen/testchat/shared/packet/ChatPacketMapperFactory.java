@@ -10,11 +10,14 @@ import me.ialistannen.testchat.shared.packet.packets.PacketSetNickName;
  *
  * @author I Al Istannen
  */
-public class ChatPacketMapperFactory {
+public final class ChatPacketMapperFactory {
 
     private static final PacketMapper ourInstance = new PacketMapper();
 
-    static {
+    /**
+     * Singletons like private constructors!
+     */
+    private ChatPacketMapperFactory() {
         ourInstance.registerPacket(1, PacketSetNickName.class);
         ourInstance.registerPacket(2, PacketChatMessage.class);
     }

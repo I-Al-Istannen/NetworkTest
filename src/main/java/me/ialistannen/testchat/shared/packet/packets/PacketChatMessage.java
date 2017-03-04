@@ -12,7 +12,7 @@ public class PacketChatMessage extends PacketString {
     /**
      * Forced by {@link Packet}
      */
-    public PacketChatMessage() {
+    protected PacketChatMessage() {
     }
 
     /**

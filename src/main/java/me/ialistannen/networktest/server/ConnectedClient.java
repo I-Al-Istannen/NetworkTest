@@ -4,7 +4,6 @@ import com.google.common.base.Preconditions;
 
 import me.ialistannen.networktest.shared.event.EventFactory;
 import me.ialistannen.networktest.shared.event.EventManager;
-import me.ialistannen.networktest.shared.event.IPacketEvent;
 import me.ialistannen.networktest.shared.event.PacketEvent;
 import me.ialistannen.networktest.shared.identification.ID;
 import me.ialistannen.networktest.shared.packet.Direction;
@@ -31,13 +30,13 @@ public abstract class ConnectedClient {
 
         EventFactory eventFactory = getServer().getEventFactory();
         EventManager eventManager = getServer().getEventManager();
-        
-        IPacketEvent event = eventFactory
+
+        PacketEvent event = eventFactory
                 .create(packet, this, Direction.TO_CLIENT, EventManager.State.FILTER);
 
         eventManager.postEvent(event, EventManager.State.FILTER);
 
-        if (event instanceof PacketEvent && ((PacketEvent) event).isCancelled()) {
+        if (event.isCancelled()) {
             return;
         }
 

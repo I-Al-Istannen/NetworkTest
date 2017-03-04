@@ -10,12 +10,12 @@ import me.ialistannen.networktest.server.Server;
 import me.ialistannen.networktest.shared.event.EventFactory;
 import me.ialistannen.networktest.shared.event.EventManager;
 import me.ialistannen.networktest.shared.event.EventManager.State;
-import me.ialistannen.networktest.shared.event.IPacketEvent;
 import me.ialistannen.networktest.shared.event.PacketEvent;
 import me.ialistannen.networktest.shared.packet.Direction;
 import me.ialistannen.networktest.shared.packet.Packet;
 import me.ialistannen.networktest.shared.packet.PacketBuffer;
 import me.ialistannen.networktest.shared.packet.protocol.PacketMapper;
+import me.ialistannen.networktest.util.ReflectionUtil;
 import me.ialistannen.networktest.util.RunnableUtil;
 
 /**
@@ -76,12 +76,12 @@ public class Client {
     public void sendPacket(Packet packet) {
         Preconditions.checkState(isConnected(), "The connection thread is dead.");
 
-        IPacketEvent packetEvent = eventFactory.create(
+        PacketEvent packetEvent = eventFactory.create(
                 packet, Client.this, Direction.TO_SERVER, State.FILTER
         );
         getEventManager().postEvent(packetEvent, State.FILTER);
 
-        if (packetEvent instanceof PacketEvent && ((PacketEvent) packetEvent).isCancelled()) {
+        if (packetEvent.isCancelled()) {
             return;
         }
 
@@ -119,16 +119,16 @@ public class Client {
             Class<? extends Packet> packetClass = classOptional.get();
 
             RunnableUtil.doUnchecked(() -> {
-                Packet packet = packetClass.newInstance();
+                Packet packet = ReflectionUtil.newInstance(packetClass);
                 packet.load(buffer);
 
                 {
-                    IPacketEvent packetEvent = eventFactory.create(
+                    PacketEvent packetEvent = eventFactory.create(
                             packet, Client.this, Direction.TO_CLIENT, State.FILTER
                     );
                     getEventManager().postEvent(packetEvent, State.FILTER);
 
-                    if (packetEvent instanceof PacketEvent && ((PacketEvent) packetEvent).isCancelled()) {
+                    if (packetEvent.isCancelled()) {
                         return;
                     }
 

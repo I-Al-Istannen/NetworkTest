@@ -25,28 +25,28 @@ import me.ialistannen.networktest.util.RunnableUtil;
  */
 public abstract class ConnectionThreadBase extends Thread {
 
-    protected final int SOCKET_TIMEOUT_MILLIS;
+    private final int SOCKET_TIMEOUT_MILLIS;
 
-    protected final Socket socket;
+    private final Socket socket;
 
-    protected final AtomicBoolean running = new AtomicBoolean(true);
-    protected final Queue<PacketBuffer> writeQueue = new ConcurrentLinkedDeque<>();
+    private final AtomicBoolean running = new AtomicBoolean(true);
+    private final Queue<PacketBuffer> writeQueue = new ConcurrentLinkedDeque<>();
 
     /**
      * Creates a new {@link ConnectionThreadBase}
      *
      * @param name The name of the {@link Thread}
      * @param socket The {@link Socket}. It should already be opened. I will <em>not</em> open it for you...
-     * @param socketTimeoutMinutes The timeout of the socket in milliseconds
+     * @param socketTimeoutMillis The timeout of the socket in milliseconds
      */
-    protected ConnectionThreadBase(String name, Socket socket, int socketTimeoutMinutes) {
+    protected ConnectionThreadBase(String name, Socket socket, int socketTimeoutMillis) {
         super(name);
 
         // won't catch everything (opened, then closed again) but it is good enough for now
         Preconditions.checkArgument(socket.isConnected(), "socket needs to be connected");
 
         this.socket = socket;
-        this.SOCKET_TIMEOUT_MILLIS = socketTimeoutMinutes;
+        this.SOCKET_TIMEOUT_MILLIS = socketTimeoutMillis;
     }
 
     /**

@@ -1,7 +1,5 @@
 package me.ialistannen.testchat.shared.event.events;
 
-import com.google.common.base.Preconditions;
-
 import me.ialistannen.networktest.shared.event.PacketEvent;
 import me.ialistannen.networktest.shared.packet.Direction;
 import me.ialistannen.networktest.shared.packet.Packet;
@@ -10,7 +8,7 @@ import me.ialistannen.testchat.shared.packet.packets.PacketChatMessage;
 /**
  * @author I Al Istannen
  */
-public class SendChatMessageEvent extends PacketEvent {
+public class SendChatMessageEvent extends PacketEvent<PacketChatMessage> {
 
     /**
      * Creates a {@link PacketEvent}
@@ -19,13 +17,8 @@ public class SendChatMessageEvent extends PacketEvent {
      * @param packet The {@link Packet}
      * @param direction The {@link Direction}
      */
-    public SendChatMessageEvent(Object source, Packet packet, Direction direction) {
+    public SendChatMessageEvent(Object source, PacketChatMessage packet, Direction direction) {
         super(source, packet, direction);
-
-        Preconditions.checkArgument(
-                packet instanceof PacketChatMessage,
-                "packet must be an instance of PacketChatMessage"
-        );
     }
 
     /**
@@ -33,10 +26,5 @@ public class SendChatMessageEvent extends PacketEvent {
      */
     public String getMessage() {
         return getPacket().getMessage();
-    }
-
-    @Override
-    public PacketChatMessage getPacket() {
-        return (PacketChatMessage) super.getPacket();
     }
 }

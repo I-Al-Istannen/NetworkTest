@@ -18,14 +18,15 @@ public class PacketString extends Packet {
     /**
      * Forced by {@link Packet}
      */
-    public PacketString() {
+    protected PacketString() {
+
     }
 
     /**
      * @param value The value of the {@link PacketString}
      */
     public PacketString(String value) {
-        this.value = Objects.requireNonNull(value, "value can not be null!");;
+        this.value = Objects.requireNonNull(value, "value can not be null!");
     }
 
     /**

@@ -82,7 +82,7 @@ public class PacketBuffer {
      *
      * @throws BufferUnderflowException if not enough bytes are in this buffer
      */
-    public byte[] getBytes(byte[] data) throws BufferUnderflowException {
+    public byte[] getBytes(byte[] data) {
         buffer.get(data);
         return data;
     }
@@ -94,7 +94,7 @@ public class PacketBuffer {
      *
      * @throws BufferUnderflowException if not enough bytes are in this buffer
      */
-    public String getString() throws BufferUnderflowException {
+    public String getString() {
         byte[] bytes = new byte[getInt()];
         return new String(getBytes(bytes), StandardCharsets.UTF_8);
     }
@@ -131,12 +131,12 @@ public class PacketBuffer {
         int oldPosition = position();
 
         setPosition(start);
-        byte[] buffer = new byte[end - start];
-        getBytes(buffer);
+        byte[] tmp = new byte[end - start];
+        getBytes(tmp);
 
         setPosition(oldPosition);
 
-        return buffer;
+        return tmp;
     }
 
 

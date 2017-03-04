@@ -4,7 +4,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import me.ialistannen.networktest.shared.event.EventFactory;
-import me.ialistannen.networktest.shared.event.IPacketEvent;
 import me.ialistannen.networktest.shared.event.PacketEvent;
 import me.ialistannen.networktest.shared.packet.Direction;
 import me.ialistannen.networktest.shared.packet.Packet;
@@ -20,7 +19,7 @@ import static me.ialistannen.networktest.shared.event.EventManager.State;
 public class PlaceholderEventFactory implements EventFactory {
 
     private Map<Class<? extends Packet>,
-            TriFunction<Packet, Object, Direction, IPacketEvent>> packetFactories = new HashMap<>();
+            TriFunction<Packet, Object, Direction, PacketEvent>> packetFactories = new HashMap<>();
 
     /**
      * Adds a Factory for a {@link Packet}
@@ -29,7 +28,7 @@ public class PlaceholderEventFactory implements EventFactory {
      * @param factory The factory for it
      */
     public void addPacketFactory(Class<? extends Packet> packetClass,
-                                 TriFunction<Packet, Object, Direction, IPacketEvent> factory) {
+                                 TriFunction<Packet, Object, Direction, PacketEvent> factory) {
         packetFactories.put(packetClass, factory);
     }
 
@@ -39,10 +38,10 @@ public class PlaceholderEventFactory implements EventFactory {
      * @param direction The {@link Direction} it is travelling
      * @param state The current {@link State}
      *
-     * @return The created {@link IPacketEvent}
+     * @return The created {@link PacketEvent}
      */
     @Override
-    public IPacketEvent create(Packet packet, Object source, Direction direction, State state) {
+    public PacketEvent create(Packet packet, Object source, Direction direction, State state) {
         if (!packetFactories.containsKey(packet.getClass())) {
             return new PacketEvent(source, packet, direction);
         }

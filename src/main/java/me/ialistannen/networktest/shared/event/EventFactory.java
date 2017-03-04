@@ -5,7 +5,7 @@ import me.ialistannen.networktest.shared.packet.Direction;
 import me.ialistannen.networktest.shared.packet.Packet;
 
 /**
- * A factory for {@link IPacketEvent}s
+ * A factory for {@link PacketEvent}s
  *
  * @author I Al Istannen
  */
@@ -18,7 +18,7 @@ public interface EventFactory {
      * @param direction The {@link Direction} it is travelling
      * @param state The current {@link State}
      *
-     * @return The created {@link IPacketEvent}
+     * @return The created {@link PacketEvent}
      */
-    IPacketEvent create(Packet packet, Object source, Direction direction, State state);
+    PacketEvent create(Packet packet, Object source, Direction direction, State state);
 }

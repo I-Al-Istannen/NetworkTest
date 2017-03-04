@@ -14,7 +14,10 @@ public class EventManager {
 
     private Map<State, EventBus> buses = new HashMap<>();
 
-    {
+    /**
+     * Creates a new {@link EventManager}
+     */
+    public EventManager() {
         initBuses();
     }
 
@@ -39,12 +42,12 @@ public class EventManager {
     }
 
     /**
-     * Posts an {@link IPacketEvent}
+     * Posts an {@link PacketEvent}
      *
      * @param event The events to post
      * @param state The state to post it at
      */
-    public void postEvent(IPacketEvent event, State state) {
+    public void postEvent(PacketEvent<?> event, State state) {
         EventBus eventBus = buses.get(state);
         if (eventBus != null) {
             eventBus.post(event);

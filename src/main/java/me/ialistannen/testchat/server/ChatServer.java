@@ -19,8 +19,7 @@ import me.ialistannen.testchat.shared.packet.packets.PacketChatMessage;
  *
  * @author I Al Istannen
  */
-public class ChatServer {
-    private Server<ConnectedChatClient> server;
+public class ChatServer extends Server<ConnectedChatClient> {
 
     /**
      * Creates a new ChatServer
@@ -28,14 +27,13 @@ public class ChatServer {
      * @param port The port
      */
     public ChatServer(int port) {
-        server = new Server<>(
+        super(
                 ChatPacketMapperFactory.getMapper(),
                 (chatClientServer, socket) -> new ConnectedChatClient(),
                 new ServerEventFactory(),
-                port
-        );
+                port);
 
-        server.getEventManager().register(State.LISTEN, this);
+        getEventManager().register(State.LISTEN, this);
     }
 
     @Subscribe
@@ -45,7 +43,7 @@ public class ChatServer {
         ConnectedChatClient connectedChatClient = (ConnectedChatClient) event.getSource();
         connectedChatClient.setNick(event.getNickName());
 
-        server.broadcastPacket(new PacketChatMessage("Got a nick: " + event.getNickName()));
+        broadcastPacket(new PacketChatMessage("Got a nick: " + event.getNickName()));
     }
 
     @Subscribe
@@ -55,7 +53,7 @@ public class ChatServer {
         ConnectedChatClient client = (ConnectedChatClient) event.getSource();
         String message = "<" + client.getNick() + "> " + event.getMessage();
 
-        server.broadcastPacket(new PacketChatMessage(message));
+        broadcastPacket(new PacketChatMessage(message));
     }
 
     public static void main(String[] args) {
@@ -64,7 +62,7 @@ public class ChatServer {
         new Timer().scheduleAtFixedRate(new TimerTask() {
             @Override
             public void run() {
-                server.server.broadcastPacket(
+                server.broadcastPacket(
                         new PacketChatMessage(
                                 "Hey, server is here: "
                                         + LocalTime.now().format(DateTimeFormatter.ISO_LOCAL_TIME)

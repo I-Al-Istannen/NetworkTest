@@ -6,6 +6,7 @@ import java.awt.GridLayout;
 import java.awt.Insets;
 import java.io.IOException;
 import java.net.Socket;
+import java.util.function.Consumer;
 
 import com.google.common.eventbus.Subscribe;
 
@@ -29,22 +30,35 @@ import javax.swing.WindowConstants;
  *
  * @author I Al Istannen
  */
-public class ChatClient {
+public class ChatClient extends Client {
 
     private JTextArea textArea;
-
-    private Client client;
 
     /**
      * @param port The port of the server
      * @param hostname The hostname of the server
+     *
+     * @throws IOException if the creation of the {@link Socket} doesn't work
      */
-    public ChatClient(int port, String hostname) {
-        client = new Client(getSocket(port, hostname), ChatPacketMapperFactory.getMapper(), new ClientEventFactory());
+    public ChatClient(int port, String hostname) throws IOException {
+        super(
+                new Socket(hostname, port),
+                ChatPacketMapperFactory.getMapper(),
+                new ClientEventFactory()
+        );
 
-        client.getEventManager().register(State.LISTEN, this);
+        getEventManager().register(State.LISTEN, this);
 
+        JFrame contentFrame = createContentFrame();
+        requestNicknameFromUser(contentFrame, nick -> sendPacket(new PacketSetNickName(nick)));
+    }
 
+    /**
+     * Creates the {@link JFrame} for the GUI client's content
+     *
+     * @return The created {@link JFrame}
+     */
+    private JFrame createContentFrame() {
         JFrame frame = new JFrame();
         Container contentPane = frame.getContentPane();
         contentPane.setLayout(new BorderLayout());
@@ -56,10 +70,10 @@ public class ChatClient {
 
         JTextField textField = new JTextField();
         textField.addActionListener(e -> {
-            if(textField.getText().equalsIgnoreCase(".quit")) {
+            if (textField.getText().equalsIgnoreCase(".quit")) {
                 System.exit(0);
             }
-            client.sendPacket(new PacketChatMessage(textField.getText()));
+            sendPacket(new PacketChatMessage(textField.getText()));
             textField.setText("");
         });
 
@@ -70,41 +84,40 @@ public class ChatClient {
         frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         frame.setVisible(true);
 
-        {
-            JDialog dialog = new JDialog(frame, "Choose a Nickname", true);
-            dialog.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
-            
-            dialog.setLayout(new GridLayout(1,2));
-            dialog.add(new JLabel("Nickname: "));
-            JTextField field = new JTextField();
-            field.addActionListener(e -> {
-                client.sendPacket(new PacketSetNickName(field.getText()));
-                dialog.setVisible(false);
-            });
-            dialog.add(field);
-            field.setMargin(new Insets(0, 10, 0, 0));
-            
-            dialog.setSize(250, 90);
-            dialog.setVisible(true);
-        }
+        return frame;
     }
+
+    /**
+     * Creates the dialog to choose a nickname
+     *
+     * @param contentFrame The content frame
+     * @param callback The callback to handle the nickname
+     */
+    private void requestNicknameFromUser(JFrame contentFrame, Consumer<String> callback) {
+        JDialog dialog = new JDialog(contentFrame, "Choose a Nickname", true);
+        dialog.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
+
+        dialog.setLayout(new GridLayout(1, 2));
+        dialog.add(new JLabel("Nickname: "));
+        JTextField field = new JTextField();
+        field.addActionListener(e -> {
+            callback.accept(field.getText());
+            dialog.setVisible(false);
+        });
+        dialog.add(field);
+        field.setMargin(new Insets(0, 10, 0, 0));
+
+        dialog.setSize(250, 90);
+        dialog.setVisible(true);
+    }
+
 
     @Subscribe
     private void onReceiveChatMessage(ReceiveChatMessageEvent event) {
         textArea.append(event.getMessage() + "\n");
     }
 
-    private Socket getSocket(int port, String hostname) {
-        Socket socket;
-        try {
-            socket = new Socket(hostname, port);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-        return socket;
-    }
-
-    public static void main(String[] args) {
-        ChatClient client = new ChatClient(12345, "localhost");
+    public static void main(String[] args) throws IOException {
+        new ChatClient(12345, "localhost");
     }
 }

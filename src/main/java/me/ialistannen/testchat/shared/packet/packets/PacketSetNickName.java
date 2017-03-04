@@ -10,7 +10,7 @@ public class PacketSetNickName extends PacketString {
     /**
      * Forced by {@link PacketSetNickName}
      */
-    public PacketSetNickName() {
+    protected PacketSetNickName() {
     }
 
     /**

@@ -8,7 +8,7 @@ public abstract class Packet {
     /**
      * We'd need to enforce this default constructor. Sadly Java has no way for that.
      */
-    public Packet() {
+    protected Packet() {
 
     }
 
@@ -19,7 +19,7 @@ public abstract class Packet {
      *
      * @throws PacketDecodingException if an error occurred decoding the packet
      */
-    public abstract void load(PacketBuffer buffer) throws PacketDecodingException;
+    public abstract void load(PacketBuffer buffer);
 
     /**
      * Saves the packet to a buffer
