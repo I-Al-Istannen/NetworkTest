@@ -8,6 +8,8 @@ import java.util.Collections;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.BiFunction;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
@@ -33,6 +35,8 @@ import me.ialistannen.networktest.util.RunnableUtil;
  * @author I Al Istannen
  */
 public class Server <T extends ConnectedClient> {
+
+    private static final Logger LOGGER = Logger.getLogger(Server.class.getName());
 
     private EventManager eventManager;
     private PacketMapper packetMapper;
@@ -190,7 +194,7 @@ public class Server <T extends ConnectedClient> {
         Optional<Class<? extends Packet>> classOptional = packetMapper.getPacketClass(packetId);
 
         if (!classOptional.isPresent()) {
-            System.err.println("Unknown packet ID: " + packetId);
+            LOGGER.log(Level.WARNING, "Unknown packet ID: {}", packetId);
             return;
         }
 
@@ -219,8 +223,7 @@ public class Server <T extends ConnectedClient> {
             });
         } catch (RunnableUtil.ErrorInRunnableException e) {
             if (e.getCause() instanceof PacketDecodingException) {
-                System.err.println("Error decoding packet");
-                e.printStackTrace();
+                LOGGER.log(Level.WARNING, "Error decoding packet", e);
             }
             else {
                 throw e;

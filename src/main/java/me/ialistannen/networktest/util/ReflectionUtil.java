@@ -1,6 +1,9 @@
 package me.ialistannen.networktest.util;
 
 import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * A util to help with reflection
@@ -8,6 +11,8 @@ import java.lang.reflect.Constructor;
  * @author I Al Istannen
  */
 public class ReflectionUtil {
+
+    private static final Logger LOGGER = Logger.getLogger(ReflectionUtil.class.getName());
 
     /**
      * Creates a new instance of a {@link Class}
@@ -17,29 +22,30 @@ public class ReflectionUtil {
      *
      * @return The new instance
      *
-     * @throws IllegalArgumentException if the class has no nullary constructor
-     * @throws RuntimeException         wrapping any Exception that might occur
+     * @throws IllegalArgumentException  if the class has no nullary constructor
+     * @throws InvocationTargetException if an error occurred inside the constructor
+     * @throws InstantiationException    if you passed me stuff like an interface or abstract class
      */
-    public static <T> T newInstance(Class<T> clazz) {
+    public static <T> T newInstance(Class<T> clazz) throws InvocationTargetException, InstantiationException {
         try {
             return clazz.newInstance();
-        } catch (IllegalAccessException e) {
+        } catch (IllegalAccessException | InstantiationException e) {
             // has no nullary constructor or not accessible
             return newInstanceFromPrivate(clazz);
-        } catch (InstantiationException e) {
-            throw new RuntimeException(e);
         }
     }
 
-    private static <T> T newInstanceFromPrivate(Class<T> clazz) {
+    private static <T> T newInstanceFromPrivate(Class<T> clazz)
+            throws InvocationTargetException, InstantiationException {
         try {
             Constructor<T> constructor = clazz.getDeclaredConstructor();
             constructor.setAccessible(true);
             return constructor.newInstance();
         } catch (NoSuchMethodException e) {
             throw new IllegalArgumentException("Class has no nullary constructor");
-        } catch (ReflectiveOperationException newException) {
-            throw new RuntimeException(newException);
+        } catch (IllegalAccessException e) {
+            LOGGER.log(Level.SEVERE, "I have no rights to perfrom reflection", e);
+            throw new IllegalStateException("No permission for reflection", e);
         }
     }
 }

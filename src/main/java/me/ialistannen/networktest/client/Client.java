@@ -3,6 +3,8 @@ package me.ialistannen.networktest.client;
 import java.net.Socket;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import com.google.common.base.Preconditions;
 
@@ -24,6 +26,8 @@ import me.ialistannen.networktest.util.RunnableUtil;
  * @author I Al Istannen
  */
 public class Client {
+
+    private static final Logger LOGGER = Logger.getLogger(Client.class.getName());
 
     private final EventManager eventManager = new EventManager();
     private PacketMapper packetMapper;
@@ -98,7 +102,7 @@ public class Client {
             int packetId = buffer.getInt();
             Optional<Class<? extends Packet>> classOptional = packetMapper.getPacketClass(packetId);
             if (!classOptional.isPresent()) {
-                System.err.println("Unknown packet id: " + packetId);
+                LOGGER.log(Level.WARNING, "Unknown packet ID: {}", packetId);
                 return;
             }
 
@@ -112,8 +116,7 @@ public class Client {
                 callEvent(packet, Direction.TO_CLIENT);
             });
         } catch (Exception e) {
-            System.err.println("An error occurred reading a packet");
-            e.printStackTrace();
+            LOGGER.log(Level.INFO, "An error occurred reading a packet", e);
         }
     }
 

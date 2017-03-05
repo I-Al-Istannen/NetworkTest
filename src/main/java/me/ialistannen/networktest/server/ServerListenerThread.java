@@ -7,6 +7,8 @@ import java.net.SocketTimeoutException;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.BiFunction;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import me.ialistannen.networktest.util.RunnableUtil;
 
@@ -17,11 +19,13 @@ import me.ialistannen.networktest.util.RunnableUtil;
  */
 class ServerListenerThread <T extends ConnectedClient> extends Thread {
 
+    private static final Logger LOGGER = Logger.getLogger(ServerListenerThread.class.getName());
+
     private final Server<T> server;
     private final ServerSocket serverSocket;
     private final BiFunction<Server<T>, Socket, T> clientFactory;
 
-    private final int SOCKET_TIMEOUT_MILLIS;
+    private final int socketTimeoutMillis;
     private final AtomicBoolean running = new AtomicBoolean(true);
 
     /**
@@ -40,7 +44,7 @@ class ServerListenerThread <T extends ConnectedClient> extends Thread {
 
         this.server = Objects.requireNonNull(server, "server can not be null!");
         this.clientFactory = Objects.requireNonNull(clientFactory, "clientFactory can not be null!");
-        this.SOCKET_TIMEOUT_MILLIS = socketTimeoutMillis;
+        this.socketTimeoutMillis = socketTimeoutMillis;
 
         serverSocket = new ServerSocket(port);
     }
@@ -55,28 +59,39 @@ class ServerListenerThread <T extends ConnectedClient> extends Thread {
     @Override
     public void run() {
         try {
-            serverSocket.setSoTimeout(SOCKET_TIMEOUT_MILLIS);
+            serverSocket.setSoTimeout(socketTimeoutMillis);
 
             while (running.get() && !isInterrupted()) {
-                try {
-                    Socket socket = serverSocket.accept();
-
-                    T connectedClient = clientFactory.apply(server, socket);
-                    server.acceptClient(connectedClient, socket);
-
-                } catch (SocketTimeoutException ignored) {
-                    // Okay. We will try again!
-                }
+                acceptClient();
             }
 
         } catch (IOException e) {
-            System.err.println("An I/O error occurred."
-                    + " This probably means the client closed the connection or the network has problems");
-
-            e.printStackTrace();
+            LOGGER.log(
+                    Level.INFO,
+                    "An I/O error occurred." +
+                            " This probably means the client closed the connection or the network has problems",
+                    e
+            );
             shutdown();
         } finally {
             RunnableUtil.doUnchecked(serverSocket::close);
+        }
+    }
+
+    /**
+     * Accepts a new {@link ConnectedClient}
+     *
+     * @throws IOException if an {@link IOException} occurs
+     */
+    private void acceptClient() throws IOException {
+        try {
+            Socket socket = serverSocket.accept();
+
+            T connectedClient = clientFactory.apply(server, socket);
+            server.acceptClient(connectedClient, socket);
+
+        } catch (SocketTimeoutException ignored) {
+            // Okay. We will try again!
         }
     }
 }

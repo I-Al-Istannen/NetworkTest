@@ -11,6 +11,8 @@ import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import com.google.common.base.Preconditions;
 
@@ -25,7 +27,9 @@ import me.ialistannen.networktest.util.RunnableUtil;
  */
 public abstract class ConnectionThreadBase extends Thread {
 
-    private final int SOCKET_TIMEOUT_MILLIS;
+    private static final Logger LOGGER = Logger.getLogger(ConnectionThreadBase.class.getName());
+
+    private final int socketTimeoutMillis;
 
     private final Socket socket;
 
@@ -42,11 +46,11 @@ public abstract class ConnectionThreadBase extends Thread {
     protected ConnectionThreadBase(String name, Socket socket, int socketTimeoutMillis) {
         super(name);
 
-        // won't catch everything (opened, then closed again) but it is good enough for now
+        // won't catch everything (opened, then closed again) but should be good enough for now
         Preconditions.checkArgument(socket.isConnected(), "socket needs to be connected");
 
         this.socket = socket;
-        this.SOCKET_TIMEOUT_MILLIS = socketTimeoutMillis;
+        this.socketTimeoutMillis = socketTimeoutMillis;
     }
 
     /**
@@ -128,7 +132,7 @@ public abstract class ConnectionThreadBase extends Thread {
     public void run() {
         try (InputStream inputStream = socket.getInputStream();
              OutputStream outputStream = socket.getOutputStream()) {
-            socket.setSoTimeout(SOCKET_TIMEOUT_MILLIS);
+            socket.setSoTimeout(socketTimeoutMillis);
 
             while (running.get() && !isInterrupted()) {
                 PacketBuffer readBuffer = new PacketBuffer();
@@ -146,19 +150,18 @@ public abstract class ConnectionThreadBase extends Thread {
 
         } catch (RuntimeException e) {
             if (e.getCause() instanceof SocketException) {
-                System.err.println("The socket had a problem");
-                e.printStackTrace();
-                shutdown();
+                LOGGER.log(Level.WARNING, "The socket had a problem. Did the client close the connection?", e);
             }
             else {
-                e.printStackTrace();
+                LOGGER.log(Level.INFO, "A RuntimeException was thrown. Shutting down.", e);
             }
+            shutdown();
         } catch (IOException e) {
-            e.printStackTrace();
+            LOGGER.log(Level.INFO, "An IO error occurred. Did the client close the connection? Shutting down.", e);
             shutdown();
         } finally {
             RunnableUtil.doUnchecked(socket::close);
-            System.out.println("I died!");
+            LOGGER.info("I died. Connection was probably closed");
         }
     }
 
