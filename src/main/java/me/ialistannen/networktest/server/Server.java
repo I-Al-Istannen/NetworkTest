@@ -20,6 +20,7 @@ import me.ialistannen.networktest.shared.identification.ID;
 import me.ialistannen.networktest.shared.packet.Direction;
 import me.ialistannen.networktest.shared.packet.Packet;
 import me.ialistannen.networktest.shared.packet.PacketBuffer;
+import me.ialistannen.networktest.shared.packet.PacketDecodingException;
 import me.ialistannen.networktest.shared.packet.protocol.PacketMapper;
 import me.ialistannen.networktest.util.ReflectionUtil;
 import me.ialistannen.networktest.util.RunnableUtil;
@@ -51,21 +52,18 @@ public class Server <T extends ConnectedClient> {
      * @param port The port of the server
      * @param eventFactory The {@link EventFactory} to use
      *
-     * @throws RuntimeException wrapping any Exception occurring while creating the {@link ServerSocket}
+     * @throws IOException if the {@link ServerSocket} throws any
      */
-    public Server(PacketMapper packetMapper, BiFunction<Server<T>, Socket, T> clientFactory, EventFactory eventFactory,
-                  int port) {
+    public Server(PacketMapper packetMapper, BiFunction<Server<T>, Socket, T> clientFactory,
+                  EventFactory eventFactory, int port) throws IOException {
 
         this.packetMapper = Objects.requireNonNull(packetMapper, "packetMapper can not be null!");
         this.eventFactory = Objects.requireNonNull(eventFactory, "eventFactory can not be null!");
         this.eventManager = new EventManager();
 
-        try {
-            serverListenerThread = new ServerListenerThread<>(this, clientFactory, port, 1000);
-            serverListenerThread.start();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+
+        serverListenerThread = new ServerListenerThread<>(this, clientFactory, port, 1000);
+        serverListenerThread.start();
     }
 
     /**
@@ -115,7 +113,6 @@ public class Server <T extends ConnectedClient> {
      * Stops listening for new clients
      */
     public void stopListeningForClients() {
-        // TODO: 03.03.2017 Rename this? Remove it? 
         serverListenerThread.shutdown();
     }
 
@@ -189,17 +186,17 @@ public class Server <T extends ConnectedClient> {
      * @param packetBuffer The read {@link PacketBuffer}
      */
     void handleRead(PacketBuffer packetBuffer, ServerThread serverThread) {
+        int packetId = packetBuffer.getInt();
+        Optional<Class<? extends Packet>> classOptional = packetMapper.getPacketClass(packetId);
+
+        if (!classOptional.isPresent()) {
+            System.err.println("Unknown packet ID: " + packetId);
+            return;
+        }
+
+        Class<? extends Packet> packetClass = classOptional.get();
+
         try {
-            int packetId = packetBuffer.getInt();
-            Optional<Class<? extends Packet>> classOptional = packetMapper.getPacketClass(packetId);
-
-            if (!classOptional.isPresent()) {
-                System.err.println("Unknown packet ID: " + packetId);
-                return;
-            }
-
-            Class<? extends Packet> packetClass = classOptional.get();
-
             RunnableUtil.doUnchecked(() -> {
                 Packet packet = ReflectionUtil.newInstance(packetClass);
                 packet.load(packetBuffer);
@@ -220,9 +217,14 @@ public class Server <T extends ConnectedClient> {
                     );
                 }
             });
-        } catch (Exception e) {
-            System.err.println("Error decoding a Packet");
-            e.printStackTrace();
+        } catch (RunnableUtil.ErrorInRunnableException e) {
+            if (e.getCause() instanceof PacketDecodingException) {
+                System.err.println("Error decoding packet");
+                e.printStackTrace();
+            }
+            else {
+                throw e;
+            }
         }
     }
 }

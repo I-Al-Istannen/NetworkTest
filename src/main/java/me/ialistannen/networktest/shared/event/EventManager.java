@@ -1,6 +1,6 @@
 package me.ialistannen.networktest.shared.event;
 
-import java.util.HashMap;
+import java.util.EnumMap;
 import java.util.Map;
 
 import com.google.common.eventbus.EventBus;
@@ -12,7 +12,7 @@ import com.google.common.eventbus.EventBus;
  */
 public class EventManager {
 
-    private Map<State, EventBus> buses = new HashMap<>();
+    private Map<State, EventBus> buses = new EnumMap<>(State.class);
 
     /**
      * Creates a new {@link EventManager}

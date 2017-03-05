@@ -70,7 +70,7 @@ public class ChatClient extends Client {
 
         JTextField textField = new JTextField();
         textField.addActionListener(e -> {
-            if (textField.getText().equalsIgnoreCase(".quit")) {
+            if (".quit".equalsIgnoreCase(textField.getText())) {
                 System.exit(0);
             }
             sendPacket(new PacketChatMessage(textField.getText()));
@@ -110,7 +110,7 @@ public class ChatClient extends Client {
         dialog.setSize(250, 90);
         dialog.setVisible(true);
     }
-    
+
     @Subscribe
     private void onReceiveChatMessage(ReceiveChatMessageEvent event) {
         textArea.append(event.getMessage() + "\n");

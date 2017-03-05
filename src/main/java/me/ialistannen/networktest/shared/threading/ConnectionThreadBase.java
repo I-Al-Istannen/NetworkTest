@@ -99,22 +99,24 @@ public abstract class ConnectionThreadBase extends Thread {
         // go back to the start, to be able to read the first size
         buffer.rewind();
 
-        for (int startPos = 0; startPos < currentBufferPosition - 4; ) {
+        int position = 0;
+        // -4 as an int (size) is four bytes
+        while (position < currentBufferPosition - 4) {
             PacketBuffer tmp = new PacketBuffer();
 
             // read the size of the packet (excluding the int for the size)
             int size = buffer.getInt();
             // Go past the size int.
             // We do not want that in our delivered data. It is just for us to split them correctly
-            startPos += 4;
+            position += 4;
 
             // Add all bytes of the packet to the new buffer.
-            tmp.putBytes(buffer.rangeAsArray(startPos, startPos + size));
+            tmp.putBytes(buffer.rangeAsArray(position, position + size));
 
-            startPos += size;
+            position += size;
             // advance the position for buffer#getInt to return the next size.
             // The methods above didn't change the position of the buffer.
-            buffer.setPosition(startPos);
+            buffer.setPosition(position);
 
             buffers.add(tmp);
         }
@@ -131,33 +133,19 @@ public abstract class ConnectionThreadBase extends Thread {
             while (running.get() && !isInterrupted()) {
                 PacketBuffer readBuffer = new PacketBuffer();
 
-                RunnableUtil.doUncheckedAndSwallow(() -> {
-                    int tmp;
-                    while ((tmp = inputStream.read()) != -1) {
-                        readBuffer.putByte((byte) tmp);
-                    }
-                }, SocketTimeoutException.class);
+                readData(inputStream, readBuffer);
 
                 if (readBuffer.position() > 0) {
-                    for (PacketBuffer buffer : slicePacketIfNeeded(readBuffer)) {
-                        handleRead(buffer);
-                    }
+                    slicePacketIfNeeded(readBuffer).forEach(this::handleRead);
                 }
 
                 if (!writeQueue.isEmpty()) {
-                    synchronized (writeQueue) {
-                        for (PacketBuffer buffer : writeQueue) {
-                            outputStream.write(buffer.asArray());
-                            outputStream.flush();
-                        }
-                        writeQueue.clear();
-                    }
+                    sendData(outputStream);
                 }
             }
 
         } catch (RuntimeException e) {
             if (e.getCause() instanceof SocketException) {
-                // TODO: 03.03.2017 Error handling 
                 System.err.println("The socket had a problem");
                 e.printStackTrace();
                 shutdown();
@@ -171,6 +159,38 @@ public abstract class ConnectionThreadBase extends Thread {
         } finally {
             RunnableUtil.doUnchecked(socket::close);
             System.out.println("I died!");
+        }
+    }
+
+    /**
+     * Reads data from the {@link InputStream} into the {@link PacketBuffer}
+     *
+     * @param inputStream The {@link InputStream} to read from
+     * @param readBuffer The {@link PacketBuffer} to write to
+     */
+    private void readData(InputStream inputStream, PacketBuffer readBuffer) {
+        RunnableUtil.doUncheckedAndSwallow(() -> {
+            int tmp;
+            while ((tmp = inputStream.read()) != -1) {
+                readBuffer.putByte((byte) tmp);
+            }
+        }, SocketTimeoutException.class);
+    }
+
+    /**
+     * Sends the data from the {@link #writeQueue} to the output stream
+     *
+     * @param outputStream The {@link OutputStream} to write to
+     *
+     * @throws IOException if any {@link IOException} occurs
+     */
+    private void sendData(OutputStream outputStream) throws IOException {
+        synchronized (writeQueue) {
+            for (PacketBuffer buffer : writeQueue) {
+                outputStream.write(buffer.asArray());
+                outputStream.flush();
+            }
+            writeQueue.clear();
         }
     }
 

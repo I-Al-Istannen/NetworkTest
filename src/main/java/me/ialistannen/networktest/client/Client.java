@@ -76,21 +76,7 @@ public class Client {
     public void sendPacket(Packet packet) {
         Preconditions.checkState(isConnected(), "The connection thread is dead.");
 
-        PacketEvent<?> packetEvent = eventFactory.create(
-                packet, Client.this, Direction.TO_SERVER, State.FILTER
-        );
-        getEventManager().postEvent(packetEvent, State.FILTER);
-
-        if (packetEvent.isCancelled()) {
-            return;
-        }
-
-        getEventManager().postEvent(
-                eventFactory.create(
-                        packet, Client.this, Direction.TO_SERVER, State.LISTEN
-                ),
-                State.LISTEN
-        );
+        callEvent(packet, Direction.TO_SERVER);
 
         clientConnectionThread.sendPacket(packet);
     }
@@ -122,27 +108,37 @@ public class Client {
                 Packet packet = ReflectionUtil.newInstance(packetClass);
                 packet.load(buffer);
 
-                {
-                    PacketEvent<?> packetEvent = eventFactory.create(
-                            packet, Client.this, Direction.TO_CLIENT, State.FILTER
-                    );
-                    getEventManager().postEvent(packetEvent, State.FILTER);
 
-                    if (packetEvent.isCancelled()) {
-                        return;
-                    }
-
-                    getEventManager().postEvent(
-                            eventFactory.create(
-                                    packet, Client.this, Direction.TO_CLIENT, State.LISTEN
-                            ),
-                            State.LISTEN
-                    );
-                }
+                callEvent(packet, Direction.TO_CLIENT);
             });
         } catch (Exception e) {
             System.err.println("An error occurred reading a packet");
             e.printStackTrace();
         }
+    }
+
+    /**
+     * Posts the event on all channels it needs to be posted
+     *
+     * @param packet The {@link Packet} to send
+     * @param direction The {@link Direction} of the {@link Packet}
+     */
+    private void callEvent(Packet packet, Direction direction) {
+        PacketEvent<?> packetEvent = eventFactory.create(
+                packet, Client.this, direction, State.FILTER
+        );
+        getEventManager().postEvent(packetEvent, State.FILTER);
+
+        if (packetEvent.isCancelled()) {
+            return;
+        }
+
+        // we need a new event here, maybe listen is a different one
+        getEventManager().postEvent(
+                eventFactory.create(
+                        packet, Client.this, direction, State.LISTEN
+                ),
+                State.LISTEN
+        );
     }
 }

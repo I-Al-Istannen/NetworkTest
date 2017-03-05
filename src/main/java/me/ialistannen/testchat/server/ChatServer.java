@@ -1,5 +1,7 @@
 package me.ialistannen.testchat.server;
 
+import java.io.IOException;
+import java.net.ServerSocket;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Timer;
@@ -25,8 +27,10 @@ public class ChatServer extends Server<ConnectedChatClient> {
      * Creates a new ChatServer
      *
      * @param port The port
+     *
+     * @throws IOException if any error occurs while creating the {@link ServerSocket}
      */
-    public ChatServer(int port) {
+    public ChatServer(int port) throws IOException {
         super(
                 ChatPacketMapperFactory.getMapper(),
                 (chatClientServer, socket) -> new ConnectedChatClient(),
@@ -58,7 +62,7 @@ public class ChatServer extends Server<ConnectedChatClient> {
         broadcastPacket(new PacketChatMessage(message));
     }
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws Exception {
         ChatServer server = new ChatServer(12345);
 
         new Timer().scheduleAtFixedRate(new TimerTask() {
