@@ -18,8 +18,8 @@ public class PacketString implements Packet {
     /**
      * Forced by {@link Packet}
      */
-    public PacketString() {
-
+    private PacketString() {
+        // This constructor is needed to deserialize a Packet
     }
 
     /**

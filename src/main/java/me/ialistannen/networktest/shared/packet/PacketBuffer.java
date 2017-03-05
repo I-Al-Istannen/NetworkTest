@@ -100,10 +100,11 @@ public class PacketBuffer {
     }
 
     /**
-     * @return The buffer as a byte array. The array is from [0;position]
+     * Returns the part from 0 (inclusive) to position (exclusive) as an array
+     *
+     * @return The buffer as a byte array. The array is from [0;position)
      */
     public byte[] asArray() {
-        // TODO: 24.02.2017 Return the whole packet? 
         int position = position();
         byte[] data = new byte[position];
 
