@@ -207,7 +207,7 @@ public class Server <T extends ConnectedClient> {
                 T client = serverToClientMap.get(serverThread);
 
                 {
-                    PacketEvent packetEvent = eventFactory.create(packet, client, Direction.TO_SERVER, State.FILTER);
+                    PacketEvent<?> packetEvent = eventFactory.create(packet, client, Direction.TO_SERVER, State.FILTER);
                     getEventManager().postEvent(packetEvent, State.FILTER);
 
                     if (packetEvent.isCancelled()) {

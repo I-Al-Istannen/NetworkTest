@@ -17,12 +17,15 @@ import me.ialistannen.testchat.shared.packet.packets.PacketSetNickName;
  */
 class ServerEventFactory extends PlaceholderEventFactory {
 
-    {
+    /**
+     * Creates a new {@link ServerEventFactory}
+     */
+    ServerEventFactory() {
         addPacketFactory(PacketSetNickName.class, (packet, source, direction) -> {
             if (direction == Direction.TO_SERVER) {
                 return new ReceiveNickNameEvent(source, packet, direction);
             }
-            return new PacketEvent(source, packet, direction);
+            return new PacketEvent<>(source, packet, direction);
         });
         addPacketFactory(
                 PacketChatMessage.class,
@@ -33,6 +36,5 @@ class ServerEventFactory extends PlaceholderEventFactory {
                     return new SendChatMessageEvent(source, packet, direction);
                 }
         );
-
     }
 }

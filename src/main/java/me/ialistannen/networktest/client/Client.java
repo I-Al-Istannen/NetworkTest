@@ -76,7 +76,7 @@ public class Client {
     public void sendPacket(Packet packet) {
         Preconditions.checkState(isConnected(), "The connection thread is dead.");
 
-        PacketEvent packetEvent = eventFactory.create(
+        PacketEvent<?> packetEvent = eventFactory.create(
                 packet, Client.this, Direction.TO_SERVER, State.FILTER
         );
         getEventManager().postEvent(packetEvent, State.FILTER);
@@ -123,7 +123,7 @@ public class Client {
                 packet.load(buffer);
 
                 {
-                    PacketEvent packetEvent = eventFactory.create(
+                    PacketEvent<?> packetEvent = eventFactory.create(
                             packet, Client.this, Direction.TO_CLIENT, State.FILTER
                     );
                     getEventManager().postEvent(packetEvent, State.FILTER);

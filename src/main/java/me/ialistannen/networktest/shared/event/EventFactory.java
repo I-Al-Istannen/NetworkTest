@@ -14,11 +14,11 @@ public interface EventFactory {
 
     /**
      * @param packet The Packet
-     * @param source The source of the packet
+     * @param source The source of the {@link Packet}
      * @param direction The {@link Direction} it is travelling
      * @param state The current {@link State}
      *
      * @return The created {@link PacketEvent}
      */
-    PacketEvent create(Packet packet, Object source, Direction direction, State state);
+    <T extends Packet> PacketEvent<T> create(T packet, Object source, Direction direction, State state);
 }

@@ -16,7 +16,10 @@ import me.ialistannen.testchat.shared.packet.packets.PacketString;
  */
 class ClientEventFactory extends PlaceholderEventFactory {
 
-    {
+    /**
+     * Creates a new {@link ClientEventFactory}
+     */
+    ClientEventFactory() {
         addPacketFactory(
                 PacketString.class,
                 (packet, source, direction) -> new PacketStringEvent(source, packet, direction)

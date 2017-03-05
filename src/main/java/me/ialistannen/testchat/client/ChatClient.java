@@ -110,8 +110,7 @@ public class ChatClient extends Client {
         dialog.setSize(250, 90);
         dialog.setVisible(true);
     }
-
-
+    
     @Subscribe
     private void onReceiveChatMessage(ReceiveChatMessageEvent event) {
         textArea.append(event.getMessage() + "\n");

@@ -31,7 +31,7 @@ public abstract class ConnectedClient {
         EventFactory eventFactory = getServer().getEventFactory();
         EventManager eventManager = getServer().getEventManager();
 
-        PacketEvent event = eventFactory
+        PacketEvent<?> event = eventFactory
                 .create(packet, this, Direction.TO_CLIENT, EventManager.State.FILTER);
 
         eventManager.postEvent(event, EventManager.State.FILTER);

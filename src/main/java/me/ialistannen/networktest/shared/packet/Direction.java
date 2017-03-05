@@ -14,5 +14,5 @@ public enum Direction {
     /**
      * A {@link Packet} heading to the server
      */
-    TO_SERVER;
+    TO_SERVER
 }

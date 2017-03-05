@@ -31,7 +31,8 @@ public class ChatServer extends Server<ConnectedChatClient> {
                 ChatPacketMapperFactory.getMapper(),
                 (chatClientServer, socket) -> new ConnectedChatClient(),
                 new ServerEventFactory(),
-                port);
+                port
+        );
 
         getEventManager().register(State.LISTEN, this);
     }
@@ -43,6 +44,7 @@ public class ChatServer extends Server<ConnectedChatClient> {
         ConnectedChatClient connectedChatClient = (ConnectedChatClient) event.getSource();
         connectedChatClient.setNick(event.getNickName());
 
+        connectedChatClient.sendPacket(new PacketChatMessage("Nicked you as: \"" + event.getNickName() + "\""));
         broadcastPacket(new PacketChatMessage("Got a nick: " + event.getNickName()));
     }
 
