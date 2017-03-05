@@ -32,8 +32,12 @@ class ServerThread extends ConnectionThreadBase {
     /**
      * @return The {@link Server}
      */
-    Server<? extends ConnectedClient> getServer() {
-        return server;
+    Server<ConnectedClient> getServer() {
+        // We do not want to return a generic, it enforces _nothing_
+        // An the server _WILL_ be a subtype of ConnectedClient, so all should be fine
+        @SuppressWarnings("unchecked")
+        Server<ConnectedClient> tmp = (Server<ConnectedClient>) this.server;
+        return tmp;
     }
 
     /**

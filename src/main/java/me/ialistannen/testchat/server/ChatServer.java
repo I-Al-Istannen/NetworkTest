@@ -6,6 +6,8 @@ import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import com.google.common.eventbus.Subscribe;
 
@@ -22,6 +24,8 @@ import me.ialistannen.testchat.shared.packet.packets.PacketChatMessage;
  * @author I Al Istannen
  */
 public class ChatServer extends Server<ConnectedChatClient> {
+
+    private static final Logger LOGGER = Logger.getLogger(ChatServer.class.getName());
 
     /**
      * Creates a new ChatServer
@@ -43,7 +47,7 @@ public class ChatServer extends Server<ConnectedChatClient> {
 
     @Subscribe
     private void onReceiveNick(ReceiveNickNameEvent event) {
-        System.out.println("Got nick: " + event.getNickName());
+        LOGGER.log(Level.INFO, "Got nick: {}", event.getNickName());
 
         ConnectedChatClient connectedChatClient = (ConnectedChatClient) event.getSource();
         connectedChatClient.setNick(event.getNickName());
@@ -54,7 +58,7 @@ public class ChatServer extends Server<ConnectedChatClient> {
 
     @Subscribe
     private void onReceiveChatMessage(ReceiveChatMessageEvent event) {
-        System.out.println("Got: " + event.getMessage());
+        LOGGER.log(Level.INFO, "Got: {}", event.getMessage());
 
         ConnectedChatClient client = (ConnectedChatClient) event.getSource();
         String message = "<" + client.getNick() + "> " + event.getMessage();

@@ -13,7 +13,7 @@ import me.ialistannen.networktest.shared.identification.UuidID;
  */
 public class ConnectedChatClient extends ConnectedClient {
 
-    private final ID ID = new UuidID(UUID.randomUUID());
+    private final ID id = new UuidID(UUID.randomUUID());
 
     private String nick;
 
@@ -36,7 +36,8 @@ public class ConnectedChatClient extends ConnectedClient {
      *
      * @return The {@link ID} of this client
      */
-    public ID getID() {
-        return ID;
+    @Override
+    public ID getId() {
+        return id;
     }
 }

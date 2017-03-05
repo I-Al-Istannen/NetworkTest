@@ -7,7 +7,15 @@ import org.apache.commons.lang3.ArrayUtils;
  *
  * @author I Al Istannen
  */
-public class RunnableUtil {
+public final class RunnableUtil {
+
+    /**
+     * Creates <em>no</em> new Util instance
+     */
+    private RunnableUtil() {
+        throw new UnsupportedOperationException("Really?");
+    }
+
 
     /**
      * Executes an {@link UncheckedRunnable}

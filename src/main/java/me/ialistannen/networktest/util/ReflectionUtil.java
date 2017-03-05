@@ -10,9 +10,16 @@ import java.util.logging.Logger;
  *
  * @author I Al Istannen
  */
-public class ReflectionUtil {
+public final class ReflectionUtil {
 
     private static final Logger LOGGER = Logger.getLogger(ReflectionUtil.class.getName());
+
+    /**
+     * Creates <em>no</em> new Util instance
+     */
+    private ReflectionUtil() {
+        throw new UnsupportedOperationException("Really?");
+    }
 
     /**
      * Creates a new instance of a {@link Class}

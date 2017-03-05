@@ -97,7 +97,7 @@ public class Server <T extends ConnectedClient> {
      * @return The client, if any
      */
     public Optional<T> getClientById(ID id) {
-        return getClients().stream().filter(t -> t.getID().equals(id)).findAny();
+        return getClients().stream().filter(t -> t.getId().equals(id)).findAny();
     }
 
     /**
@@ -156,13 +156,6 @@ public class Server <T extends ConnectedClient> {
     }
 
     /**
-     * @return The {@link Server}'s {@link EventFactory}
-     */
-    EventFactory getEventFactory() {
-        return eventFactory;
-    }
-
-    /**
      * @return The {@link PacketMapper} of the {@link Server}
      */
     PacketMapper getPacketMapper() {
@@ -207,19 +200,7 @@ public class Server <T extends ConnectedClient> {
 
                 T client = serverToClientMap.get(serverThread);
 
-                {
-                    PacketEvent<?> packetEvent = eventFactory.create(packet, client, Direction.TO_SERVER, State.FILTER);
-                    getEventManager().postEvent(packetEvent, State.FILTER);
-
-                    if (packetEvent.isCancelled()) {
-                        return;
-                    }
-
-                    getEventManager().postEvent(
-                            eventFactory.create(packet, client, Direction.TO_SERVER, State.LISTEN),
-                            State.LISTEN
-                    );
-                }
+                callEvent(packet, client, Direction.TO_SERVER);
             });
         } catch (RunnableUtil.ErrorInRunnableException e) {
             if (e.getCause() instanceof PacketDecodingException) {
@@ -229,5 +210,29 @@ public class Server <T extends ConnectedClient> {
                 throw e;
             }
         }
+    }
+
+    /**
+     * Calls the events
+     *
+     * @param packet The {@link Packet}The {@link Packet} to broadcast
+     * @param client The {@link ConnectedClient} who caused it
+     *
+     * @return false if it was cancelled
+     */
+    boolean callEvent(Packet packet, T client, Direction direction) {
+        PacketEvent<?> packetEvent = eventFactory.create(packet, client, direction, State.FILTER);
+        getEventManager().postEvent(packetEvent, State.FILTER);
+
+        if (packetEvent.isCancelled()) {
+            return false;
+        }
+
+        getEventManager().postEvent(
+                eventFactory.create(packet, client, direction, State.LISTEN),
+                State.LISTEN
+        );
+
+        return true;
     }
 }

@@ -11,14 +11,14 @@ import me.ialistannen.networktest.shared.packet.PacketDecodingException;
  *
  * @author I Al Istannen
  */
-public class PacketString extends Packet {
+public class PacketString implements Packet {
 
     private String value;
 
     /**
      * Forced by {@link Packet}
      */
-    protected PacketString() {
+    public PacketString() {
 
     }
 
@@ -44,7 +44,7 @@ public class PacketString extends Packet {
      * @throws PacketDecodingException if an error occurred decoding the packet
      */
     @Override
-    public void load(PacketBuffer buffer) throws PacketDecodingException {
+    public void load(PacketBuffer buffer) {
         try {
             value = buffer.getString();
         } catch (Exception e) {

@@ -67,6 +67,7 @@ public class PlaceholderEventFactory implements EventFactory {
     /**
      * A function generating an event
      */
+    @FunctionalInterface
     public interface EventGeneratingFunction <T extends Packet> {
 
         /**
